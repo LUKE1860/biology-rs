@@ -11,6 +11,7 @@ use nanorand::rand::pcg64::Pcg64;
 use nanorand::Rng;
 use std::thread;
 use mimalloc::MiMalloc;
+use bio::pattern_matching::bndm::BNDM;
 #[global_allocator]
 static GLOBAL:MiMalloc=MiMalloc;
 //i know long struct huh?
@@ -122,8 +123,12 @@ a
 }
 #[inline]
 pub fn fasta_procedure(){
-//thread 1
 thread::spawn(move ||{
+//thread 1
+//used to write first 20 entries to .fa file
+//counting unwrap_or 21
+let r=env::args();
+println!("{:?}",r);
 let seed=Names::default();
 let vector=seed.to_vector_first();
 let mut iterate=vector.iter();
@@ -140,7 +145,7 @@ let shuffled=random.shuffle(&mut gen_vec);
 let genome=gen_vec.concat().into_bytes();
 let ap_file=File::options().append(true).open(p_env).unwrap();
 let s_buffer=BufWriter::new(ap_file);
-let numbers=random.generate_range(0..=500);
+let numbers=random.generate_range(0..=1500);
 let mut id="id".to_string();
 id.push_str(&numbers.to_string());
 let rec=FRecord::with_attrs(
@@ -150,10 +155,12 @@ Some(&id),
 );
 let mut dna_writer=fasta::Writer::new(s_buffer);
 dna_writer.write_record(&rec).unwrap();
+assert_eq!(rec.check(),Ok(()));
 }
 }).join().unwrap();
 thread::spawn(||{
     //thread 2
+    //used to write another 21 entries(counting unwrap_or) to .fa file
     let names=Names::default();
     let f_vector=names.to_vector_second();
     let mut it=f_vector.iter();
@@ -170,7 +177,7 @@ thread::spawn(||{
     let genome=gen_vec.concat().into_bytes();
     let append_file=File::options().append(true).open(env).unwrap();
     let f_buffer=BufWriter::new(append_file);
-    let numbers=rand.generate_range(0..=500);
+    let numbers=rand.generate_range(0..=1500);
     let mut id="id".to_string();
     id.push_str(&numbers.to_string());
     let record=FRecord::with_attrs(
@@ -180,13 +187,30 @@ thread::spawn(||{
     );
     let mut f_writer=fasta::Writer::new(f_buffer);
     f_writer.write_record(&record).unwrap();
+   assert_eq!(record.check(),Ok(()));
 }
 }).join().unwrap();
+
+//READING PART AND MATCHING
+let mut r_env=env::current_dir().unwrap();
+r_env.push("src");
+r_env.push("gen.fa");
+let pattern=b"GAAA";
+let read_file=File::open(r_env).unwrap();
+let reader=FReader::new(read_file);
+for record in reader.records(){
+let it=record.unwrap();
+let bndm=BNDM::new(pattern);
+let occ:Vec<usize>=bndm.find_all(&it.seq().to_vec()).collect();
+if occ.len()>0{
+println!("There are {} entries matching in {}",occ.len(),it.desc().unwrap());
+}
+}
 }
 #[inline]
 pub fn bed_procedure(){
     //thread 1
-    //thread one writes 20 names with randomized positions of genomes with LINE extension and + or - aux
+    //thread one writes 21 names (with unwrap_or) with randomized positions of genomes with LINE extension and + or - aux
     thread::spawn(move ||{
     let names=Names::default();
     let f_vector=names.to_vector_first();
@@ -195,17 +219,14 @@ pub fn bed_procedure(){
     let mut random=Pcg64::new();
     let f_rand:u64=random.generate_range(0..=500);
     let s_rand:u64=random.generate_range(500..=1000);
-    let t_rand:u64=random.generate_range(0..=50);
     let mut env=env::current_dir().unwrap();
     env.push("src");
     env.push("dna.bed");
     let f_env=env.clone();
     let s_env=f_env.clone();
-    let file=File::options().write(true).open(env).unwrap();
     let append_file=File::options().append(true).open(s_env).unwrap();
-    let read_file=File::options().read(true).open(f_env).unwrap();
     let f_buffer=BufWriter::new(append_file);
-    let mut record=bed::Record::new();
+    let mut record=BRecord::new();
     record.set_chrom(it.next().unwrap_or(&"Position".to_string()));
     record.set_start(f_rand);
     record.set_end(s_rand);
@@ -225,17 +246,14 @@ pub fn bed_procedure(){
             let mut random=Pcg64::new();
             let f_rand:u64=random.generate_range(0..=500);
             let s_rand:u64=random.generate_range(500..=1000);
-            let t_rand:u64=random.generate_range(0..=50);
             let mut env=env::current_dir().unwrap();
             env.push("src");
             env.push("dna.bed");
             let f_env=env.clone();
             let s_env=f_env.clone();
-            let file=File::options().write(true).open(env).unwrap();
             let append_file=File::options().append(true).open(s_env).unwrap();
-            let read_file=File::options().read(true).open(f_env).unwrap();
             let f_buffer=BufWriter::new(append_file);
-            let mut record=bed::Record::new();
+            let mut record=BRecord::new();
             record.set_chrom(it.next().unwrap_or(&"Cordinates".to_string()));
             record.set_start(f_rand);
             record.set_end(s_rand);

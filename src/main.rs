@@ -1,6 +1,4 @@
-//write fastq
 mod bio;
-use std::alloc;
 //now what should i create?
 //let alphabet2=Alphabet::new(b"CCUCGGCGGGCA");
 fn main(){
