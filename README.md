@@ -1,2 +1,2 @@
 # biology-rs
-**Bioinformatics project using rust-bio.**
+**Bioinformatics project using rust-bio,mimalloc and nanorand.**
