@@ -59,6 +59,7 @@ struct Names {
 }
 //implementation for Names for genomes
 impl Names {
+    #[inline (always)]
     fn default() -> Self {
         Names {
             covid: "Covid".to_string(),
@@ -104,6 +105,7 @@ impl Names {
         }
     }
     //puts all strings to a vector, yes im not sane
+    #[inline (always)]
     fn into_vector_first(self) -> Vec<String> {
         let a: Vec<String> = vec![
             self.covid,
@@ -129,6 +131,7 @@ impl Names {
         ];
         a
     }
+    #[inline (always)]
     fn into_vector_second(self) -> Vec<String> {
         let a: Vec<String> = vec![
             self.doing,
@@ -155,13 +158,11 @@ impl Names {
         a
     }
 }
-#[inline]
+#[inline (always)]
 pub fn fasta_procedure() {
     thread::spawn(move || {
         //thread 1
         //used to write first 21 entries (counting unwrap_or) to .fa file
-        let r = env::args();
-        println!("{:?}", r);
         let seed = Names::default();
         let vector = seed.into_vector_first();
         let mut iterate = vector.iter();
@@ -237,28 +238,34 @@ pub fn fasta_procedure() {
     })
     .join()
     .unwrap();
-
     //READING PART AND MATCHING
+    //acgt
     let mut r_env = env::current_dir().unwrap();
     r_env.push("src");
     r_env.push("gen.fa");
+    let mut randomize=Pcg64::new();
+    let f_pattern_vec:Vec<&str>=vec!["A","G"];
+    let s_pattern_vec:Vec<&str>=vec!["C","T"];
+    let mut randomized_vec:Vec<&str>=Vec::with_capacity(3);
+    for _ in 0..=1{
+    let pat:usize=randomize.generate_range(0..=1);
+    randomized_vec.push(f_pattern_vec.get(pat).unwrap());
+    randomized_vec.push(s_pattern_vec.get(pat).unwrap());
+    }
     let pattern = b"GAAA";
+    let conc=randomized_vec.concat();
     let read_file = File::open(r_env).unwrap();
     let reader = FReader::new(read_file);
     for record in reader.records() {
         let it = record.unwrap();
-        let bndm = BNDM::new(pattern);
+        let bndm = BNDM::new(conc.bytes());
         let occ: Vec<usize> = bndm.find_all(it.seq()).collect();
-        if !occ.is_empty(){
-            println!(
-                "There are {} entries matching in {}",
-                occ.len(),
-                it.desc().unwrap()
-            );
+        if !occ.is_empty() {
+            println!("There are {} entries matching {} in {}",occ.len(),conc,it.desc().unwrap());
         }
     }
 }
-#[inline]
+#[inline (always)]
 pub fn bed_procedure() {
     //thread 1
     //thread one writes 21 names (with unwrap_or) with randomized positions of genomes with LINE extension and + or - aux
@@ -267,9 +274,13 @@ pub fn bed_procedure() {
         let f_vector = names.into_vector_first();
         let mut it = f_vector.iter();
         for _ in 0..=20 {
+            //plus minus vector
+            let mut pm_vec:Vec<&str>=vec!["+","-"];
             let mut random = Pcg64::new();
-            let f_rand: u64 = random.generate_range(0..=500);
-            let s_rand: u64 = random.generate_range(500..=1000);
+            random.shuffle(&mut pm_vec);
+            let range:usize=random.generate_range(0..=1);
+            let f_rand: u64 = random.generate_range(0..=1000);
+            let s_rand: u64 = random.generate_range(1000..=1500);
             let mut env = env::current_dir().unwrap();
             env.push("src");
             env.push("dna.bed");
@@ -283,7 +294,7 @@ pub fn bed_procedure() {
             record.set_end(s_rand);
             record.set_score("0");
             record.set_name("LINE");
-            record.push_aux("-");
+            record.push_aux(pm_vec.get(range).unwrap());
             let mut f_writer = bed::Writer::new(f_buffer);
             f_writer.write(&record).unwrap();
         }
@@ -297,9 +308,12 @@ pub fn bed_procedure() {
         let s_vector = s_names.into_vector_second();
         let mut it = s_vector.iter();
         for _ in 0..=20 {
+            let mut pm_vec:Vec<&str>=vec!["+","-"];
             let mut random = Pcg64::new();
-            let f_rand: u64 = random.generate_range(0..=500);
-            let s_rand: u64 = random.generate_range(500..=1000);
+            random.shuffle(&mut pm_vec);
+            let range:usize=random.generate_range(0..=1);
+            let f_rand: u64 = random.generate_range(0..=1000);
+            let s_rand: u64 = random.generate_range(1000..=1500);
             let mut env = env::current_dir().unwrap();
             env.push("src");
             env.push("dna.bed");
@@ -313,12 +327,31 @@ pub fn bed_procedure() {
             record.set_end(s_rand);
             record.set_score("0");
             record.set_name("LINE");
-            record.push_aux("+");
+            record.push_aux(pm_vec.get(range).unwrap());
             let mut f_writer = bed::Writer::new(f_buffer);
             f_writer.write(&record).unwrap();
         }
     })
     .join()
     .unwrap();
-
+    //in production
+    //implement correction mechanism
+    let mut random=Pcg64::new();
+    let f_gen:u64=random.generate_range(0..=1500);
+    let s_gen:u64=random.generate_range(1500..=1505);
+    let mut path = env::current_dir().unwrap();
+    path.push("src");
+    path.push("dna.bed");
+    let file = File::open(path).unwrap();
+    let mut reader = BReader::new(file);
+    for record in reader.records() {
+    let mut unwrapped=record.unwrap();
+    let diff = unwrapped.end() - unwrapped.start();
+    if diff <500{
+    }
+        /*
+        let iterated = record.unwrap();
+        println!("Length of {} is {}. {:?}", iterated.chrom(), diff,iterated.strand().unwrap())
+        */
+    }
 }

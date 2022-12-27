@@ -9,3 +9,7 @@ edition = "2021"
 bio="*"
 nanorand="*"
 mimalloc = "0.1.32"
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true 
