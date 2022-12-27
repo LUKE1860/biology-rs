@@ -169,7 +169,6 @@ pub fn fasta_procedure() {
         for _ in 0..=20 {
             let mut random = Pcg64::new();
             let mut p_env = env::current_dir().unwrap();
-            p_env.push("src");
             p_env.push("gen.fa");
             let mut gen_vec: Vec<String> = vec![
                 "A".to_string(),
@@ -208,7 +207,6 @@ pub fn fasta_procedure() {
         for _ in 0..=20 {
             let mut rand = Pcg64::new();
             let mut env = env::current_dir().unwrap();
-            env.push("src");
             env.push("gen.fa");
             let mut gen_vec: Vec<String> = vec![
                 "A".to_string(),
@@ -227,7 +225,7 @@ pub fn fasta_procedure() {
             let mut id = "id".to_string();
             id.push_str(&numbers.to_string());
             let record = FRecord::with_attrs(
-                it.next().unwrap_or(&"Running low".to_string()),
+                it.next().unwrap_or(&"Running_low".to_string()),
                 Some(&id),
                 &genome,
             );
@@ -238,32 +236,33 @@ pub fn fasta_procedure() {
     })
     .join()
     .unwrap();
-    //READING PART AND MATCHING
-    //acgt
-    let mut r_env = env::current_dir().unwrap();
-    r_env.push("src");
-    r_env.push("gen.fa");
+    //Reading part and matching
+    //2 times recursion
+    for _ in 0..=1{
     let mut randomize=Pcg64::new();
     let f_pattern_vec:Vec<&str>=vec!["A","G"];
     let s_pattern_vec:Vec<&str>=vec!["C","T"];
     let mut randomized_vec:Vec<&str>=Vec::with_capacity(3);
+    //2 times recursion for pushing
     for _ in 0..=1{
     let pat:usize=randomize.generate_range(0..=1);
     randomized_vec.push(f_pattern_vec.get(pat).unwrap());
     randomized_vec.push(s_pattern_vec.get(pat).unwrap());
     }
-    let pattern = b"GAAA";
-    let conc=randomized_vec.concat();
+    let mut r_env = env::current_dir().unwrap();
+    r_env.push("gen.fa");
+    let pattern=randomized_vec.concat();
     let read_file = File::open(r_env).unwrap();
     let reader = FReader::new(read_file);
     for record in reader.records() {
         let it = record.unwrap();
-        let bndm = BNDM::new(conc.bytes());
+        let bndm = BNDM::new(pattern.bytes());
         let occ: Vec<usize> = bndm.find_all(it.seq()).collect();
         if !occ.is_empty() {
-            println!("There are {} entries matching {} in {}",occ.len(),conc,it.desc().unwrap());
+            println!("There are {} entries matching {} in {}",occ.len(),pattern,it.desc().unwrap());
         }
     }
+}
 }
 #[inline (always)]
 pub fn bed_procedure() {
@@ -282,7 +281,6 @@ pub fn bed_procedure() {
             let f_rand: u64 = random.generate_range(0..=1000);
             let s_rand: u64 = random.generate_range(1000..=1500);
             let mut env = env::current_dir().unwrap();
-            env.push("src");
             env.push("dna.bed");
             let f_env = env.clone();
             let s_env = f_env.clone();
@@ -315,7 +313,6 @@ pub fn bed_procedure() {
             let f_rand: u64 = random.generate_range(0..=1000);
             let s_rand: u64 = random.generate_range(1000..=1500);
             let mut env = env::current_dir().unwrap();
-            env.push("src");
             env.push("dna.bed");
             let f_env = env.clone();
             let s_env = f_env.clone();
@@ -340,7 +337,6 @@ pub fn bed_procedure() {
     let f_gen:u64=random.generate_range(0..=1500);
     let s_gen:u64=random.generate_range(1500..=1505);
     let mut path = env::current_dir().unwrap();
-    path.push("src");
     path.push("dna.bed");
     let file = File::open(path).unwrap();
     let mut reader = BReader::new(file);
