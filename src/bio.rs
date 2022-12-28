@@ -12,6 +12,8 @@ use std::env;
 use std::fs::File;
 use std::io::BufWriter;
 use std::thread;
+use std::collections::BinaryHeap;
+use std::cmp::Reverse;
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
 //i know long struct huh?
@@ -62,46 +64,46 @@ impl Names {
     #[inline (always)]
     fn default() -> Self {
         Names {
-            covid: "Covid".to_string(),
-            red: "Red".to_string(),
-            sed: "Rna".to_string(),
-            hello: "Hello".to_string(),
-            ritchie: "Ritchie".to_string(),
-            dennis: "Dennis".to_string(),
-            bjarne: "Bjarne".to_string(),
-            idk: "Idk".to_string(),
-            btw: "Btw".to_string(),
-            also: "Also".to_string(),
-            is: "Is".to_string(),
-            there1: "There1".to_string(),
-            more: "More".to_string(),
-            words: "Words".to_string(),
-            ah: "Ah".to_string(),
-            there2: "There2".to_string(),
-            are: "Are".to_string(),
-            many: "Many".to_string(),
-            what: "What".to_string(),
-            am: "Am".to_string(),
-            doing: "Doing".to_string(),
-            with: "With".to_string(),
-            my: "My".to_string(),
-            life: "Life".to_string(),
-            oh: "Oh".to_string(),
-            well: "Well".to_string(),
-            here: "Here".to_string(),
-            we: "We".to_string(),
-            go: "Go".to_string(),
-            again: "Again".to_string(),
-            i: "I".to_string(),
-            need: "Need".to_string(),
-            that: "That".to_string(),
-            rand: "Rand".to_string(),
-            num: "Num".to_string(),
-            homie: "Homie".to_string(),
-            duru: "Duru".to_string(),
-            puru: "Puru".to_string(),
-            thread: "Thread".to_string(),
-            read: "Read".to_string(),
+            covid: "chr1".to_string(),
+            red: "chr2".to_string(),
+            sed: "chr3".to_string(),
+            hello: "chr4".to_string(),
+            ritchie: "chr5".to_string(),
+            dennis: "chr6".to_string(),
+            bjarne: "chr7".to_string(),
+            idk: "chr8".to_string(),
+            btw: "chr9".to_string(),
+            also: "chr10".to_string(),
+            is: "chr11".to_string(),
+            there1: "chr12".to_string(),
+            more: "chr13".to_string(),
+            words: "chr14".to_string(),
+            ah: "chr15".to_string(),
+            there2: "chr16".to_string(),
+            are: "chr17".to_string(),
+            many: "chr18".to_string(),
+            what: "chr19".to_string(),
+            am: "chr20".to_string(),
+            doing: "chr22".to_string(),
+            with: "chr23".to_string(),
+            my: "chr24".to_string(),
+            life: "chr25".to_string(),
+            oh: "chr26".to_string(),
+            well: "chr27".to_string(),
+            here: "chr28".to_string(),
+            we: "chr29".to_string(),
+            go: "chr30".to_string(),
+            again: "chr31".to_string(),
+            i: "chr32".to_string(),
+            need: "chr33".to_string(),
+            that: "chr34".to_string(),
+            rand: "chr35".to_string(),
+            num: "chr36".to_string(),
+            homie: "chr37".to_string(),
+            duru: "chr38".to_string(),
+            puru: "chr39".to_string(),
+            thread: "chr40".to_string(),
+            read: "chr41".to_string(),
         }
     }
     //puts all strings to a vector, yes im not sane
@@ -179,6 +181,7 @@ pub fn fasta_procedure() {
             gen_vec.extend_from_within(..4);
             gen_vec.extend_from_within(..8);
             gen_vec.extend_from_within(..12);
+            gen_vec.extend_from_within(..16);
             random.shuffle(&mut gen_vec);
             let genome = gen_vec.concat().into_bytes();
             let ap_file = File::options().append(true).open(p_env).unwrap();
@@ -217,6 +220,7 @@ pub fn fasta_procedure() {
             gen_vec.extend_from_within(..4);
             gen_vec.extend_from_within(..8);
             gen_vec.extend_from_within(..12);
+            gen_vec.extend_from_within(..4);
             rand.shuffle(&mut gen_vec);
             let genome = gen_vec.concat().into_bytes();
             let append_file = File::options().append(true).open(env).unwrap();
@@ -254,6 +258,7 @@ pub fn fasta_procedure() {
     let pattern=randomized_vec.concat();
     let read_file = File::open(r_env).unwrap();
     let reader = FReader::new(read_file);
+    println!("***FASTA***");
     for record in reader.records() {
         let it = record.unwrap();
         let bndm = BNDM::new(pattern.bytes());
@@ -290,7 +295,7 @@ pub fn bed_procedure() {
             let append_file = File::options().append(true).open(s_env).unwrap();
             let f_buffer = BufWriter::new(append_file);
             let mut record = BRecord::new();
-            record.set_chrom(it.next().unwrap_or(&"Position".to_string()));
+            record.set_chrom(it.next().unwrap_or(&"chr21".to_string()));
             record.set_start(f_rand);
             record.set_end(s_rand);
             record.set_score(&actual_score.to_string());
@@ -325,7 +330,7 @@ pub fn bed_procedure() {
             let append_file = File::options().append(true).open(s_env).unwrap();
             let f_buffer = BufWriter::new(append_file);
             let mut record = BRecord::new();
-            record.set_chrom(it.next().unwrap_or(&"Cordinates".to_string()));
+            record.set_chrom(it.next().unwrap_or(&"chr42".to_string()));
             record.set_start(f_rand);
             record.set_end(s_rand);
             record.set_score(&actual_score.to_string());
@@ -337,14 +342,26 @@ pub fn bed_procedure() {
     })
     .join()
     .unwrap();
-    //in production
-    //implement correction mechanism
-    let random=Pcg64::new();
+    //checks which chrom has the highest length
     let mut path = env::current_dir().unwrap();
     path.push("dna.bed");
     let file = File::open(path).unwrap();
     let mut reader = BReader::new(file);
+    let mut records_heap:BinaryHeap<(u64,String)>=BinaryHeap::new();
+    let mut reverse_heap:BinaryHeap<Reverse<(u64,String)>>=BinaryHeap::new();
     for record in reader.records() {
     let unwrapped=record.unwrap();
+    let diff=unwrapped.end()-unwrapped.start();
+    let name=unwrapped.chrom().to_string();
+    let tup=(diff,name);
+    let rev_tup=tup.clone();
+    records_heap.push(tup);
+    reverse_heap.push(Reverse(rev_tup));
 }
+//quick doc, i used .0 to remove reverse from tuple
+let highest=records_heap.peek().unwrap();
+let lowest=reverse_heap.peek().unwrap();
+println!("***BED***");
+println!("{} has the highest length of {}",highest.1,highest.0);
+println!("{} has the lowest length of {}",lowest.0.1,lowest.0.0);
 }
