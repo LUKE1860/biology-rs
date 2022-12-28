@@ -280,6 +280,9 @@ pub fn bed_procedure() {
             let range:usize=random.generate_range(0..=1);
             let f_rand: u64 = random.generate_range(0..=1000);
             let s_rand: u64 = random.generate_range(1000..=1500);
+            let f_score_value:f64=random.generate();
+            let s_score_value:i32=random.generate_range(1..=3);
+            let actual_score=f64::from(s_score_value)-f_score_value;
             let mut env = env::current_dir().unwrap();
             env.push("dna.bed");
             let f_env = env.clone();
@@ -290,7 +293,7 @@ pub fn bed_procedure() {
             record.set_chrom(it.next().unwrap_or(&"Position".to_string()));
             record.set_start(f_rand);
             record.set_end(s_rand);
-            record.set_score("0");
+            record.set_score(&actual_score.to_string());
             record.set_name("LINE");
             record.push_aux(pm_vec.get(range).unwrap());
             let mut f_writer = bed::Writer::new(f_buffer);
@@ -312,6 +315,9 @@ pub fn bed_procedure() {
             let range:usize=random.generate_range(0..=1);
             let f_rand: u64 = random.generate_range(0..=1000);
             let s_rand: u64 = random.generate_range(1000..=1500);
+            let f_score_value:f64=random.generate();
+            let s_score_value:i32=random.generate_range(1..=3);
+            let actual_score=f64::from(s_score_value)-f_score_value;
             let mut env = env::current_dir().unwrap();
             env.push("dna.bed");
             let f_env = env.clone();
@@ -322,7 +328,7 @@ pub fn bed_procedure() {
             record.set_chrom(it.next().unwrap_or(&"Cordinates".to_string()));
             record.set_start(f_rand);
             record.set_end(s_rand);
-            record.set_score("0");
+            record.set_score(&actual_score.to_string());
             record.set_name("LINE");
             record.push_aux(pm_vec.get(range).unwrap());
             let mut f_writer = bed::Writer::new(f_buffer);
@@ -333,21 +339,12 @@ pub fn bed_procedure() {
     .unwrap();
     //in production
     //implement correction mechanism
-    let mut random=Pcg64::new();
-    let f_gen:u64=random.generate_range(0..=1500);
-    let s_gen:u64=random.generate_range(1500..=1505);
+    let random=Pcg64::new();
     let mut path = env::current_dir().unwrap();
     path.push("dna.bed");
     let file = File::open(path).unwrap();
     let mut reader = BReader::new(file);
     for record in reader.records() {
-    let mut unwrapped=record.unwrap();
-    let diff = unwrapped.end() - unwrapped.start();
-    if diff <500{
-    }
-        /*
-        let iterated = record.unwrap();
-        println!("Length of {} is {}. {:?}", iterated.chrom(), diff,iterated.strand().unwrap())
-        */
-    }
+    let unwrapped=record.unwrap();
+}
 }
