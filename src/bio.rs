@@ -190,7 +190,7 @@ pub fn fasta_procedure() {
             let mut id = "id".to_string();
             id.push_str(&numbers.to_string());
             let rec = FRecord::with_attrs(
-                iterate.next().unwrap_or(&"Position".to_string()),
+                iterate.next().unwrap_or(&"chr21".to_string()),
                 Some(&id),
                 &genome,
             );
@@ -229,7 +229,7 @@ pub fn fasta_procedure() {
             let mut id = "id".to_string();
             id.push_str(&numbers.to_string());
             let record = FRecord::with_attrs(
-                it.next().unwrap_or(&"Running_low".to_string()),
+                it.next().unwrap_or(&"chr42".to_string()),
                 Some(&id),
                 &genome,
             );
