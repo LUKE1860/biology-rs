@@ -1,0 +1,3 @@
+[build]
+linker = ["-C", "link-arg=-fuse-ld=lld"]
+native_cpu= ["-C", "target-cpu=native"]
