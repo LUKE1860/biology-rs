@@ -342,7 +342,7 @@ pub fn bed_procedure() {
     })
     .join()
     .unwrap();
-    //checks which chrom has the highest length
+    //checks which chrom has the highest length or lowest length
     let mut path = env::current_dir().unwrap();
     path.push("dna.bed");
     let file = File::open(path).unwrap();
