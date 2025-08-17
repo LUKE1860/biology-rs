@@ -8,7 +8,6 @@ edition = "2021"
 bio="*"
 nanorand="*"
 mimalloc = "*"
-paste="*"
 [profile.release]
 lto = true
 opt-level=3
