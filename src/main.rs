@@ -3,6 +3,7 @@ use std::env;
 use std::fs;
 use std::fs::File;
 use std::path::PathBuf;
+//change pathbufs for it
 #[inline(always)]
 fn create_file(f_path:PathBuf,s_path:PathBuf){
     File::create(f_path).unwrap();

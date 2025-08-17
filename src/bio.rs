@@ -14,152 +14,65 @@ use std::io::BufWriter;
 use std::thread;
 use std::collections::BinaryHeap;
 use std::cmp::Reverse;
+//macro for creating fields in a struct
+macro_rules! create_struct{
+    ($struct_name:ident,$number_of_fields:expr,$ty:ty,$($field:ident),+)=>{
+    #[derive(Debug)]
+     struct $struct_name{
+     
+       $($field:$ty),*
+     
+     }
+     impl $struct_name {  
+             #[inline(always)]
+             fn default()->Self{
+                 $struct_name{
+                    //adds a number to the variable and after another cycle adds another
+                    $(
+                     $field:format!("{}",stringify!($field)),
+                    )*
+                 }
+             }
+             fn into_vector_first(self)->Vec<String>{
+                let mut genom_vector:Vec<String>=Vec::new();
+                let half_num=format!("chr{}",$number_of_fields/2 + 1);
+                loop{
+                $(
+                    if stringify!($field) == half_num{
+                        break;
+                    }
+                    else{
+                    genom_vector.push(self.$field.to_owned());
+                    }
+                )*
+                }
+                return genom_vector;
+             }
+             fn into_vector_second(self)->Vec<String>{
+                let mut genom_vector:Vec<String>=Vec::new();
+                let half_num=$number_of_fields/2;
+                loop{
+                $(
+                let num_vec:Vec<&str>=stringify!($field).matches(char::is_numeric).collect();
+                if num_vec.concat().parse::<i32>().unwrap() > half_num && num_vec.concat().parse::<i32>().unwrap() != $number_of_fields{
+                    genom_vector.push(self.$field.to_owned());
+                }
+                else if num_vec.concat().parse::<i32>().unwrap() == $number_of_fields{
+                    genom_vector.push(self.$field.to_owned());
+                    break;
+                }
+                )*
+                }
+                return genom_vector;
+             }
+         }
+     }
+    }
+ create_struct!(Names,41,String,chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chr23,chr24,chr25,chr26,chr27,
+chr28,chr29,chr30,chr31,chr32,chr33,chr34,chr35,chr36,chr37,chr38,chr39,chr40,chr41);
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
-//i know long struct huh?
-struct Names {
-    covid: String,
-    red: String,
-    sed: String,
-    hello: String,
-    ritchie: String,
-    dennis: String,
-    bjarne: String,
-    idk: String,
-    btw: String,
-    also: String,
-    is: String,
-    there1: String,
-    more: String,
-    words: String,
-    ah: String,
-    there2: String,
-    are: String,
-    many: String,
-    what: String,
-    am: String,
-    doing: String,
-    with: String,
-    my: String,
-    life: String,
-    oh: String,
-    well: String,
-    here: String,
-    we: String,
-    go: String,
-    again: String,
-    i: String,
-    need: String,
-    that: String,
-    rand: String,
-    num: String,
-    homie: String,
-    duru: String,
-    puru: String,
-    thread: String,
-    read: String,
-}
-//implementation for Names for genomes
-impl Names {
-    #[inline (always)]
-    fn default() -> Self {
-        Names {
-            covid: "chr1".to_string(),
-            red: "chr2".to_string(),
-            sed: "chr3".to_string(),
-            hello: "chr4".to_string(),
-            ritchie: "chr5".to_string(),
-            dennis: "chr6".to_string(),
-            bjarne: "chr7".to_string(),
-            idk: "chr8".to_string(),
-            btw: "chr9".to_string(),
-            also: "chr10".to_string(),
-            is: "chr11".to_string(),
-            there1: "chr12".to_string(),
-            more: "chr13".to_string(),
-            words: "chr14".to_string(),
-            ah: "chr15".to_string(),
-            there2: "chr16".to_string(),
-            are: "chr17".to_string(),
-            many: "chr18".to_string(),
-            what: "chr19".to_string(),
-            am: "chr20".to_string(),
-            doing: "chr22".to_string(),
-            with: "chr23".to_string(),
-            my: "chr24".to_string(),
-            life: "chr25".to_string(),
-            oh: "chr26".to_string(),
-            well: "chr27".to_string(),
-            here: "chr28".to_string(),
-            we: "chr29".to_string(),
-            go: "chr30".to_string(),
-            again: "chr31".to_string(),
-            i: "chr32".to_string(),
-            need: "chr33".to_string(),
-            that: "chr34".to_string(),
-            rand: "chr35".to_string(),
-            num: "chr36".to_string(),
-            homie: "chr37".to_string(),
-            duru: "chr38".to_string(),
-            puru: "chr39".to_string(),
-            thread: "chr40".to_string(),
-            read: "chr41".to_string(),
-        }
-    }
-    //puts all strings to a vector, yes im not sane
-    #[inline (always)]
-    fn into_vector_first(self) -> Vec<String> {
-        let a: Vec<String> = vec![
-            self.covid,
-            self.red,
-            self.sed,
-            self.hello,
-            self.ritchie,
-            self.dennis,
-            self.bjarne,
-            self.idk,
-            self.btw,
-            self.also,
-            self.is,
-            self.there1,
-            self.more,
-            self.words,
-            self.ah,
-            self.there2,
-            self.are,
-            self.many,
-            self.what,
-            self.am,
-        ];
-        a
-    }
-    #[inline (always)]
-    fn into_vector_second(self) -> Vec<String> {
-        let a: Vec<String> = vec![
-            self.doing,
-            self.with,
-            self.my,
-            self.life,
-            self.oh,
-            self.well,
-            self.here,
-            self.we,
-            self.go,
-            self.again,
-            self.i,
-            self.need,
-            self.that,
-            self.rand,
-            self.num,
-            self.homie,
-            self.duru,
-            self.puru,
-            self.thread,
-            self.read,
-        ];
-        a
-    }
-}
+
 #[inline (always)]
 pub fn fasta_procedure() {
     thread::spawn(move || {
